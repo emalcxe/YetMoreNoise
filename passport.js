@@ -13,7 +13,7 @@ passport.use(
         {
             clientID: process.env.CLIENT_ID,
             clientSecret: process.env.CLIENT_SECRET,
-            callbackURL: 'http://localhost:' + 8000 + '/auth/spotify/callback',
+            callbackURL: (process.env.URL || 'http://localhost:') + (process.env.PORT || 8080) + '/auth/spotify/callback',
         },
         function (accessToken, refreshToken, expires_in, profile, done) {
             // asynchronous verification, for effect...

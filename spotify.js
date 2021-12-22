@@ -11,9 +11,9 @@ let spotify = {
 spotify.generateGenres = function(id){
         let topGenres = this.topGenres ? this.topGenres : {};
         const spotifyAPI = new SpotifyWebApi({
-            clientId: process.env.CLIENT_ID,
+            clientID: process.env.CLIENT_ID,
             clientSecret: process.env.CLIENT_SECRET,
-            redirectUri: 'http://localhost:'+8000+'/auth/spotify/callback'
+            callbackURL: (process.env.URL || 'http://localhost:') + (process.env.PORT || 8080) + '/auth/spotify/callback',
         })
         Users.get(id).then((doc)=>{
             console.log(`Got doc for ${doc.name}`)
