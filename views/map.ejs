@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+    <title><%= title %></title>
+
+
+</head>
+<body>
+
+    <div class="bannar" >
+    <h1> <%= title %></h1>
+    <p><a href="/">Back to your profile</a></p>
+    <p>
+        The Genre Mapper takes your top artists (ande eventually tracks) and draws a relation graph based on the original
+        at <a href="https://everynoise.com/"> Every Noise at Once</a>. We have transposed it so that the original top
+        right corner has become the bottom left, and made it navigable via panning and zooming rather than scrolling.
+        Relative size of the nodes indicates the relative occurence of that genre in your top artists.
+        In the future this view will be the backbone of Yet More Noise.
+    </p>
+    </div>
+    <svg class="canvas" id="map"  xmlns="http://www.w3.org/2000/svg" width=90vw height=80vh>
+        <svg id="window" x="5%" y="5%" width="90%", height="75%" overflow="auto">
+
+        </svg>
+    </svg>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script>
+        let vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0)
+        let vh = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0)
+        const genres = <%-JSON.stringify(masterGenres)%>;
+        const topGenres = <%-JSON.stringify(topGenres)%>
+        const maxFav = Math.max(...Object.values(topGenres))
+        const maxZoom = 20;
+        const join_threshold = 1500;
+        graph_nodes = [];
+        filter = Object.keys(topGenres);
+        for (let genre of filter){
+            if (genres.map[genre])
+                graph_nodes.push(genres.map[genre])
+            else
+                console.log(genre)
+        }
+        console.log(graph_nodes)
+        let X = d3.scaleLinear()
+                .domain([genres.y_min,genres.y_max])
+                .range([0, (0.9*.9*vw)]);
+        let Y = d3.scaleLinear()
+                .domain([genres.x_min,genres.x_max])
+                .range([0, (0.8*0.8*vh)]);
+        let R = d3.scaleLinear()
+                .domain([1,maxZoom/10])
+                .range([64,4])
+        let F = d3.scaleLinear()
+                .domain([1,maxZoom])
+                .range([32,16])
+
+        let O = d3.scaleLinear()
+                .domain([1,maxZoom/5])
+                .range([.9,.2])
+
+        let V = d3.scaleLinear()
+            .domain([1,maxZoom])
+            .range([vw/2,vw/6])
+
+        let P = d3.scaleLinear()
+            .domain([1,maxFav])
+            .range([0,.3])
+
+        let  color = function(x,y,z){
+            let pop = z/20
+            let H = d3.scaleLinear()
+                .domain([0,genres.y_max+genres.x_max/2])
+                .range([0, 360]);
+            let S = d3.scaleLinear()
+                .domain([1, maxFav])
+                .range([50, 100]);
+            let V = d3.scaleLinear()
+                .domain([0,maxFav])
+                .range([5,95])
+            let out = `hsl(${parseInt(H(y+x-genres.x_max/2))},${parseInt(S(z))}%,${parseInt(V(z))}%)`
+            console.log(out)
+            return out
+        }
+
+        done = []
+        let lines = d3.select('#window').append('g').attr('id','lines')
+        for (let node of graph_nodes){
+            for (let end of graph_nodes){
+                if (!done.includes(end.id) && end.id !== node.id){
+                    if(Math.sqrt(Math.pow(end.x-node.x,2)+Math.pow(end.y-node.y,2))<join_threshold) {
+                        lines.append("line")
+                            .attr("class", "line")
+                            .attr("x1", X(node.y))
+                            .attr("x2", X(end.y))
+                            .attr("y1", Y(node.x))
+                            .attr("y2", Y(end.x))
+                            .attr("stroke", "black")
+                            .attr("stroke-width", 5)
+                            .attr('opacity',0.95)
+                    }
+                }
+            }
+            done.push(node.id)
+        }
+
+        let graph = d3.select('#window')
+            .append("g")
+            .attr("id","genre-groups")
+            .selectAll("g")
+            .data(graph_nodes)
+            .enter()
+            .append("g")
+            .attr("id",(d)=>{
+                return d.id
+            })
+            .attr("class", "genre");
+
+
+        let circles = graph
+            .append("circle")
+            .attr("class","dot")
+            .attr("cy", (d) =>{
+                return Y(d.x)
+            })
+            .attr("cx", (d) =>{
+                return X(d.y)
+            })
+            .attr("r", (d) =>{
+                return R(1) + topGenres[d.id]/2
+            })
+            .attr("opacity", (d)=>{
+                return 0.9
+            })
+            .attr("fill", (d) =>{
+                return color(d.x,d.y,topGenres[d.id])
+            })
+
+
+        let headers = graph.append("text")
+            .attr("class","genre-title")
+            .attr("y", (d) =>{
+                return Y(d.x)
+            })
+            .attr("x", (d) =>{
+                return X(d.y)
+            })
+            .attr('font-size', (d) => {return F(1) + (100/d.id.length)})
+            .attr('opacity', (d) => {return 1-O(1)+P(topGenres[d.id])})
+            .attr("text-anchor","middle")
+            .text((d)=>{
+                return d.title
+            });
+
+
+        let titles = graph.append("title")
+            .text((d)=>{
+                return d.title
+            });
+
+
+
+        let zoom = d3.zoom()
+            .scaleExtent([1, maxZoom])
+            .translateExtent([[0,0],[vw*0.9,0.8*vh]])
+                .on('zoom', zoomed);
+
+
+        // Zoom function
+        function zoomed(e) {
+
+            // Get the
+            let transform = e.transform;
+
+            let dX = transform.rescaleX(X);
+            let dY = transform.rescaleY(Y);
+
+            lines
+                .selectAll('.line')
+                .attr('transform',transform)
+                .attr('stroke-width',5/transform.k)
+                .attr('opacity',Math.max(O(transform.k),0.05))
+
+
+            headers
+                .attr('x', (d) => { return Math.floor(dX(d.y)); })
+                .attr('y', (d) => { return Math.floor(dY(d.x)); })
+                .attr('font-size', (d) => {return F(transform.k) + (100/d.id.length)})
+                .attr('opacity', (d) => {return 1-O(transform.k)+P(topGenres[d.id])})
+
+            circles
+                .attr('cx', (d) => { return Math.floor(dX(d.y)); })
+                .attr('cy', (d) => { return Math.floor(dY(d.x)); })
+                .attr('r', (d) => {
+                    return Math.max(R(transform.k) + topGenres[d.id]/2,25)
+                })
+            .attr('opacity', (d) => {return Math.max(O(transform.k),0.2)})
+
+            function rangeEnd(x,y){
+                return Math.sqrt(Math.pow((dX(y)-(X(genres.y_max/2))),2)+ Math.pow((dY(x)-(Y(genres.x_max/2))),2))
+            }
+
+        }
+
+        function initZoom() {
+            d3.select('#map')
+                .call(zoom);
+        }
+
+        initZoom();
+    </script>
+</body>
+</html>

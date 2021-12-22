@@ -1,0 +1,57 @@
+body {
+  padding: 50px;
+  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+  background-color: floralwhite;
+}
+
+a {
+  color: #00B7FF;
+}
+.canvas {
+  display: block;
+  margin: auto;
+}
+
+.banner {
+  height: 20vh;
+  display: block;
+  margin: auto;
+}
+.genre {
+  padding: 0px 2px;
+  position: relative;
+  white-space: nowrap;
+  cursor: pointer;
+  -moz-transform-origin: 0 0;
+}
+
+.genre:hover {
+  fill:red;
+}
+
+.genre-title {
+  fill: black;
+  stroke: black;
+  stroke-width: 2px;
+}
+
+.genre-title:hover {
+  fill: ghostwhite;
+  stroke: red;
+  stroke-width: 3px;
+}
+
+#lines {
+  position:relative;
+  z-index: -100;
+}
+
+#genre-groups {
+  position:relative;
+  z-index: 100;
+
+}
+
+svg {
+  text-rendering: optimizeSpeed
+}
