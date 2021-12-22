@@ -1,0 +1,13 @@
+html
+    head
+        title #{title}
+        link(rel='stylesheet' href='/stylesheets/style.css')
+        block style
+        block scripts
+    body
+        block header
+            include includes/header
+        block content
+        block footer
+            #footer
+                p.footer #[strong Yet More Noise] is an extension of <a href="https://everynoise.com/">Every Noise at Once</a> We wouldn't work without them.

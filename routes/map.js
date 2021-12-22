@@ -3,10 +3,9 @@ const router = express.Router();
 const isLoggedIn = require('../middle/auth')
 const spotify = require('../spotify')
 /* GET home page. */
-router.get('/', isLoggedIn, (req, res, next) => {
+router.get('/', isLoggedIn, (req, res) => {
   spotify.generateGenres(req.user.id)
-  console.log("!"+JSON.stringify(spotify))
-  res.render('map', { title: 'Express', masterGenres: spotify.masterGenres, topGenres:spotify.topGenres });
+  res.render('map', { title: 'Yet More Noise', masterGenres: spotify.masterGenres, topGenres:spotify.topGenres });
 });
 
 module.exports = router;

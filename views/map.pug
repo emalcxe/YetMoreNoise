@@ -1,0 +1,15 @@
+extends main
+append header
+    a(href="/") Home
+block content
+    #explanation
+        p
+            | The Genre Mapper takes your top artists (ande eventually tracks) and draws a relation graph based on the original
+            | at <a href="https://everynoise.com/"> Every Noise at Once</a>. We have transposed it so that the original top
+            | right corner has become the bottom left, and made it navigable via panning and zooming rather than scrolling.
+            | Relative size of the nodes indicates the relative occurence of that genre in your top artists.
+            | In the future this view will be the backbone of Yet More Noise.
+
+    include includes/drawMap
+
+block footer

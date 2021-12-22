@@ -1,5 +1,5 @@
 require('dotenv').config();
-const Users = require('./User')
+const Users = require('./users')
 const masterGenres = require('./genres')
 const SpotifyWebApi = require('spotify-web-api-node');
 

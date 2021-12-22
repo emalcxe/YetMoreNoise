@@ -1,0 +1,18 @@
+extends main
+block content
+    #greeting
+        p This is an extension for the excellent project <a href="https://everynoise.com">Every Noise at Once</a>
+        p(class="quote")
+        | "<em>Every Noise at Once is an ongoing attempt at an algorithmically-generated, readability-adjusted
+        | scatter-plot of the musical genre-space, based on data tracked and analyzed for 5,709 genre-shaped distinctions
+        | by Spotify as of 2021-12-14. The calibration is fuzzy, but in general down is more organic, up is more mechanical
+        | and electric; left is denser and more atmospheric, right is spikier and bouncier.</em>"
+
+    #features
+        h1 Features
+        p This is a young project and we expect to see many improvements in the future. For now we offer the following:
+            ul
+                if signedIn
+                    li <a href="/map"> #[em User Genre Explorer 0.1] </a>
+                else
+                    li #[p Please <a href="/auth/spotify">Sign In</a> to access our features]
